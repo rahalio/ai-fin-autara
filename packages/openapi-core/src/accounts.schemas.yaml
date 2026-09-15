@@ -1,0 +1,113 @@
+openapi: 3.1.0
+info:
+  title: Autara accounts schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    AccountId:
+      type: string
+      pattern: '^acc_[0-9A-HJKMNP-TV-Z]{26}$'
+    OfferId:
+      type: string
+      pattern: '^ofr_[0-9A-HJKMNP-TV-Z]{26}$'
+    AccountType:
+      type: string
+      enum: [checking, savings, credit, loan, investment]
+    FinancialAccount:
+      type: object
+      required: [accountId, customerId, provider, accountType, balance, createdAt]
+      properties:
+        accountId:
+          $ref: '#/components/schemas/AccountId'
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        provider:
+          type: string
+        accountType:
+          $ref: '#/components/schemas/AccountType'
+        balance:
+          type: number
+          format: double
+        currency:
+          $ref: ./common/primitives.yaml#/components/schemas/Currency
+        apr:
+          type: number
+          format: double
+        hostInstitutionProduct:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductOffer:
+      type: object
+      required: [offerId, provider, productType, headlineRate, hostInstitutionProduct, createdAt]
+      properties:
+        offerId:
+          $ref: '#/components/schemas/OfferId'
+        provider:
+          type: string
+        productType:
+          type: string
+        headlineRate:
+          type: number
+          format: double
+        feesAnnual:
+          type: number
+          format: double
+        hostInstitutionProduct:
+          type: boolean
+          description: True if offer is from host institution; external wins must still surface (BR-4).
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    FinancialAccountResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/FinancialAccount'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    FinancialAccountListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinancialAccount'
+        nextCursor:
+          type: string
+    FinancialAccountListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/FinancialAccountListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ProductOfferListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductOffer'
+        nextCursor:
+          type: string
+    ProductOfferListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ProductOfferListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

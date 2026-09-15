@@ -1,0 +1,237 @@
+openapi: 3.1.0
+info:
+  title: Autara Governance API
+  version: 0.1.0
+  description: Model/policy versioning, fairness monitoring, and vendor kill-switches (BR-8, BR-10, BR-11).
+  x-domain: gvn
+  license:
+    name: Proprietary
+servers:
+  - url: https://api.autara.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Governance
+paths:
+  /v1/governance/model-versions:
+    get:
+      operationId: listModelVersions
+      tags: [Governance]
+      x-repository: ModelVersion
+      x-dynamodb:
+        entityType: MODEL_VERSION
+        pkPatternTemplate: "MODEL#${modelVersionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [status]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Model versions
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: registerModelVersion
+      tags: [Governance]
+      x-repository: ModelVersion
+      x-dynamodb:
+        entityType: MODEL_VERSION
+        pkPatternTemplate: "MODEL#${modelVersionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionCreate
+      responses:
+        '201':
+          description: Model version registered
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/governance/model-versions/{modelVersionId}/approve:
+    post:
+      operationId: approveModelVersion
+      tags: [Governance]
+      x-repository: ModelVersion
+      x-dynamodb:
+        entityType: MODEL_VERSION
+        pkPatternTemplate: "MODEL#${modelVersionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - name: modelVersionId
+          in: path
+          required: true
+          schema:
+            $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionId
+      responses:
+        '200':
+          description: Model approved for production
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/governance/model-versions/{modelVersionId}/rollback:
+    post:
+      operationId: rollbackModelVersion
+      tags: [Governance]
+      x-repository: ModelVersion
+      x-dynamodb:
+        entityType: MODEL_VERSION
+        pkPatternTemplate: "MODEL#${modelVersionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - name: modelVersionId
+          in: path
+          required: true
+          schema:
+            $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionId
+      responses:
+        '200':
+          description: Model rolled back
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/ModelVersionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/governance/vendors:
+    get:
+      operationId: listVendorDependencies
+      tags: [Governance]
+      x-repository: VendorDependency
+      x-dynamodb:
+        entityType: VENDOR
+        pkPatternTemplate: "VENDOR#${vendorId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Vendor dependencies
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/VendorDependencyListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/governance/vendors/{vendorId}/kill-switch:
+    post:
+      operationId: triggerVendorKillSwitch
+      tags: [Governance]
+      x-repository: VendorDependency
+      x-dynamodb:
+        entityType: VENDOR
+        pkPatternTemplate: "VENDOR#${vendorId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - name: vendorId
+          in: path
+          required: true
+          schema:
+            $ref: ./governance.schemas.yaml#/components/schemas/VendorId
+      responses:
+        '200':
+          description: Kill-switch engaged; failover behaviour recorded
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/VendorDependencyResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/governance/fairness:
+    get:
+      operationId: getFairnessMonitoring
+      tags: [Governance]
+      x-repository: FairnessSnapshot
+      x-dynamodb:
+        entityType: FAIRNESS
+        pkPatternTemplate: "FAIRNESS#SNAPSHOT"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      responses:
+        '200':
+          description: Fairness / disparate-impact monitoring snapshot (BR-10)
+          content:
+            application/json:
+              schema:
+                $ref: ./governance.schemas.yaml#/components/schemas/FairnessSnapshotResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth

@@ -1,0 +1,70 @@
+openapi: 3.1.0
+info:
+  title: Autara outcomes schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    OutcomeReport:
+      type: object
+      required: [customerId, period, feesAvoided, interestDifferential, createdAt]
+      properties:
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        period:
+          type: string
+        feesAvoided:
+          type: number
+          format: double
+        interestDifferential:
+          type: number
+          format: double
+        goalProgressPct:
+          type: number
+          format: float
+        baselineLabel:
+          type: string
+          description: Plain-language no-automation baseline label
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    OutcomesOverview:
+      type: object
+      required: [activeCustomers, totalFeesAvoided, medianGoalProgressPct, generatedAt, createdAt]
+      properties:
+        activeCustomers:
+          type: integer
+        totalFeesAvoided:
+          type: number
+          format: double
+        medianGoalProgressPct:
+          type: number
+          format: float
+        generatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    OutcomeReportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/OutcomeReport'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    OutcomesOverviewResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/OutcomesOverview'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

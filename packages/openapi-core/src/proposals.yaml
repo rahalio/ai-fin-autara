@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: Autara Proposals API
+  version: 0.1.0
+  description: Optimisation proposals, suitability gating, confirm, and adviser exception queue (BR-2, BR-5, BR-12).
+  x-domain: prp
+  license:
+    name: Proprietary
+servers:
+  - url: https://api.autara.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Proposals
+paths:
+  /v1/proposals:
+    get:
+      operationId: listActionProposals
+      tags: [Proposals]
+      x-repository: ActionProposal
+      x-dynamodb:
+        entityType: PROPOSAL
+        pkPatternTemplate: "PROPOSAL#${proposalId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [status, material, customerId]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: status
+          in: query
+          schema:
+            $ref: ./proposals.schemas.yaml#/components/schemas/ProposalStatus
+        - name: material
+          in: query
+          schema:
+            type: boolean
+        - name: customerId
+          in: query
+          schema:
+            $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+      responses:
+        '200':
+          description: Proposals
+          content:
+            application/json:
+              schema:
+                $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createActionProposal
+      tags: [Proposals]
+      x-repository: ActionProposal
+      x-dynamodb:
+        entityType: PROPOSAL
+        pkPatternTemplate: "PROPOSAL#${proposalId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalCreate
+      responses:
+        '201':
+          description: Proposal created
+          content:
+            application/json:
+              schema:
+                $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/proposals/{proposalId}:
+    get:
+      operationId: getActionProposal
+      tags: [Proposals]
+      x-repository: ActionProposal
+      x-dynamodb:
+        entityType: PROPOSAL
+        pkPatternTemplate: "PROPOSAL#${proposalId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          schema:
+            $ref: ./proposals.schemas.yaml#/components/schemas/ProposalId
+      responses:
+        '200':
+          description: Proposal
+          content:
+            application/json:
+              schema:
+                $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/proposals/{proposalId}/confirm:
+    post:
+      operationId: confirmActionProposal
+      tags: [Proposals]
+      x-repository: ActionProposal
+      x-dynamodb:
+        entityType: PROPOSAL
+        pkPatternTemplate: "PROPOSAL#${proposalId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - name: proposalId
+          in: path
+          required: true
+          schema:
+            $ref: ./proposals.schemas.yaml#/components/schemas/ProposalId
+      responses:
+        '202':
+          description: Confirmation accepted
+          content:
+            application/json:
+              schema:
+                $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/proposals/{proposalId}/decline:
+    post:
+      operationId: declineActionProposal
+      tags: [Proposals]
+      x-repository: ActionProposal
+      x-dynamodb:
+        entityType: PROPOSAL
+        pkPatternTemplate: "PROPOSAL#${proposalId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - name: proposalId
+          in: path
+          required: true
+          schema:
+            $ref: ./proposals.schemas.yaml#/components/schemas/ProposalId
+      responses:
+        '200':
+          description: Declined
+          content:
+            application/json:
+              schema:
+                $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/adviser/exception-queue:
+    get:
+      operationId: listAdviserExceptions
+      tags: [Proposals]
+      x-repository: ActionProposal
+      x-dynamodb:
+        entityType: PROPOSAL
+        pkPatternTemplate: "PROPOSAL#${proposalId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [status]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Escalated / suitability-edge proposals for coaches
+          content:
+            application/json:
+              schema:
+                $ref: ./proposals.schemas.yaml#/components/schemas/ActionProposalListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth

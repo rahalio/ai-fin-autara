@@ -1,0 +1,134 @@
+openapi: 3.1.0
+info:
+  title: Autara goals schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    GoalId:
+      type: string
+      pattern: '^gol_[0-9A-HJKMNP-TV-Z]{26}$'
+    ConstraintId:
+      type: string
+      pattern: '^con_[0-9A-HJKMNP-TV-Z]{26}$'
+    GoalType:
+      type: string
+      enum: [emergencyBuffer, debtPaydown, savingsRate, feeMinimisation]
+    GoalStatus:
+      type: string
+      enum: [active, achieved, cancelled]
+    ConstraintType:
+      type: string
+      enum: [maxRisk, minBuffer, excludedProvider, maxAutoAmount]
+    Goal:
+      type: object
+      required: [goalId, customerId, type, targetAmount, status, createdAt]
+      properties:
+        goalId:
+          $ref: '#/components/schemas/GoalId'
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        type:
+          $ref: '#/components/schemas/GoalType'
+        targetAmount:
+          type: number
+          format: double
+        currency:
+          $ref: ./common/primitives.yaml#/components/schemas/Currency
+        status:
+          $ref: '#/components/schemas/GoalStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    GoalCreate:
+      type: object
+      required: [type, targetAmount]
+      properties:
+        type:
+          $ref: '#/components/schemas/GoalType'
+        targetAmount:
+          type: number
+          format: double
+        currency:
+          $ref: ./common/primitives.yaml#/components/schemas/Currency
+    HardConstraint:
+      type: object
+      required: [constraintId, customerId, type, value, createdAt]
+      properties:
+        constraintId:
+          $ref: '#/components/schemas/ConstraintId'
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        type:
+          $ref: '#/components/schemas/ConstraintType'
+        value:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    HardConstraintCreate:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          $ref: '#/components/schemas/ConstraintType'
+        value:
+          type: string
+    GoalResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Goal'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    GoalListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Goal'
+        nextCursor:
+          type: string
+    GoalListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/GoalListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    HardConstraintResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/HardConstraint'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    HardConstraintListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HardConstraint'
+        nextCursor:
+          type: string
+    HardConstraintListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/HardConstraintListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,215 @@
+openapi: 3.1.0
+info:
+  title: Autara Actions API
+  version: 0.1.0
+  description: Executed actions, reverse within cooling window, and pause/disable automation (BR-6).
+  x-domain: act
+  license:
+    name: Proprietary
+servers:
+  - url: https://api.autara.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Actions
+paths:
+  /v1/actions:
+    get:
+      operationId: listExecutedActions
+      tags: [Actions]
+      x-repository: ExecutedAction
+      x-dynamodb:
+        entityType: ACTION
+        pkPatternTemplate: "ACTION#${actionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [status, customerId]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: customerId
+          in: query
+          schema:
+            $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        - name: status
+          in: query
+          schema:
+            $ref: ./actions.schemas.yaml#/components/schemas/ActionStatus
+      responses:
+        '200':
+          description: Actions
+          content:
+            application/json:
+              schema:
+                $ref: ./actions.schemas.yaml#/components/schemas/ExecutedActionListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/actions/{actionId}:
+    get:
+      operationId: getExecutedAction
+      tags: [Actions]
+      x-repository: ExecutedAction
+      x-dynamodb:
+        entityType: ACTION
+        pkPatternTemplate: "ACTION#${actionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            $ref: ./actions.schemas.yaml#/components/schemas/ActionId
+      responses:
+        '200':
+          description: Action
+          content:
+            application/json:
+              schema:
+                $ref: ./actions.schemas.yaml#/components/schemas/ExecutedActionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/actions/{actionId}/reverse:
+    post:
+      operationId: reverseExecutedAction
+      tags: [Actions]
+      x-repository: ExecutedAction
+      x-dynamodb:
+        entityType: ACTION
+        pkPatternTemplate: "ACTION#${actionId}"
+        skPatternTemplate: METADATA
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - name: actionId
+          in: path
+          required: true
+          schema:
+            $ref: ./actions.schemas.yaml#/components/schemas/ActionId
+      responses:
+        '202':
+          description: Reversal accepted
+          content:
+            application/json:
+              schema:
+                $ref: ./actions.schemas.yaml#/components/schemas/ExecutedActionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/automation:
+    get:
+      operationId: getAutomationProfile
+      tags: [Actions]
+      x-repository: AutomationProfile
+      x-dynamodb:
+        entityType: AUTOMATION
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: AUTOMATION
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+      responses:
+        '200':
+          description: Automation status and paused categories
+          content:
+            application/json:
+              schema:
+                $ref: ./actions.schemas.yaml#/components/schemas/AutomationProfileResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/automation/pause:
+    post:
+      operationId: pauseAutomation
+      tags: [Actions]
+      x-repository: AutomationProfile
+      x-dynamodb:
+        entityType: AUTOMATION
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: AUTOMATION
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./actions.schemas.yaml#/components/schemas/PauseAutomationRequest
+      responses:
+        '200':
+          description: Automation paused
+          content:
+            application/json:
+              schema:
+                $ref: ./actions.schemas.yaml#/components/schemas/AutomationProfileResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/automation/resume:
+    post:
+      operationId: resumeAutomation
+      tags: [Actions]
+      x-repository: AutomationProfile
+      x-dynamodb:
+        entityType: AUTOMATION
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: AUTOMATION
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+      responses:
+        '200':
+          description: Automation resumed
+          content:
+            application/json:
+              schema:
+                $ref: ./actions.schemas.yaml#/components/schemas/AutomationProfileResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth

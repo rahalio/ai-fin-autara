@@ -1,0 +1,85 @@
+openapi: 3.1.0
+info:
+  title: Autara complaints schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    ComplaintId:
+      type: string
+      pattern: '^cmp_[0-9A-HJKMNP-TV-Z]{26}$'
+    ComplaintStatus:
+      type: string
+      enum: [open, investigating, upheld, rejected, closed]
+    ComplaintCase:
+      type: object
+      required: [complaintId, customerId, actionId, status, freezeAutomation, openedAt, createdAt]
+      properties:
+        complaintId:
+          $ref: '#/components/schemas/ComplaintId'
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        actionId:
+          type: string
+        explanationId:
+          type: string
+        status:
+          $ref: '#/components/schemas/ComplaintStatus'
+        freezeAutomation:
+          type: boolean
+        narrative:
+          type: string
+        openedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ComplaintCaseCreate:
+      type: object
+      required: [customerId, actionId, narrative]
+      properties:
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        actionId:
+          type: string
+        narrative:
+          type: string
+    ResolveComplaintRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [upheld, rejected, closed]
+        reinstateAutomation:
+          type: boolean
+    ComplaintCaseResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ComplaintCase'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ComplaintCaseListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplaintCase'
+        nextCursor:
+          type: string
+    ComplaintCaseListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ComplaintCaseListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

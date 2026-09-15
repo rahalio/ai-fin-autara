@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: Autara Accounts API
+  version: 0.1.0
+  description: Multi-provider financial graph and comparable product offers (BR-4).
+  x-domain: acc
+  license:
+    name: Proprietary
+servers:
+  - url: https://api.autara.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Accounts
+paths:
+  /v1/customers/{customerId}/accounts:
+    get:
+      operationId: listFinancialAccounts
+      tags: [Accounts]
+      x-repository: FinancialAccount
+      x-dynamodb:
+        entityType: ACCOUNT
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "ACCOUNT#${accountId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [provider, accountType]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Accounts
+          content:
+            application/json:
+              schema:
+                $ref: ./accounts.schemas.yaml#/components/schemas/FinancialAccountListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/accounts/{accountId}:
+    get:
+      operationId: getFinancialAccount
+      tags: [Accounts]
+      x-repository: FinancialAccount
+      x-dynamodb:
+        entityType: ACCOUNT
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "ACCOUNT#${accountId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: ./accounts.schemas.yaml#/components/schemas/AccountId
+      responses:
+        '200':
+          description: Account
+          content:
+            application/json:
+              schema:
+                $ref: ./accounts.schemas.yaml#/components/schemas/FinancialAccountResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/product-offers:
+    get:
+      operationId: listProductOffers
+      tags: [Accounts]
+      x-repository: ProductOffer
+      x-dynamodb:
+        entityType: OFFER
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "OFFER#${offerId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [hostInstitutionProduct]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: hostInstitutionProduct
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Comparable product offers (host and external)
+          content:
+            application/json:
+              schema:
+                $ref: ./accounts.schemas.yaml#/components/schemas/ProductOfferListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth

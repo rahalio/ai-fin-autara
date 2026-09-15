@@ -1,0 +1,184 @@
+openapi: 3.1.0
+info:
+  title: Autara Goals API
+  version: 0.1.0
+  description: Customer objectives and hard constraints the agent must not breach (BR-1).
+  x-domain: gol
+  license:
+    name: Proprietary
+servers:
+  - url: https://api.autara.local
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Goals
+paths:
+  /v1/customers/{customerId}/goals:
+    get:
+      operationId: listGoals
+      tags: [Goals]
+      x-repository: Goal
+      x-dynamodb:
+        entityType: GOAL
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "GOAL#${goalId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [status]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+        - name: status
+          in: query
+          schema:
+            $ref: ./goals.schemas.yaml#/components/schemas/GoalStatus
+      responses:
+        '200':
+          description: Goals
+          content:
+            application/json:
+              schema:
+                $ref: ./goals.schemas.yaml#/components/schemas/GoalListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createGoal
+      tags: [Goals]
+      x-repository: Goal
+      x-dynamodb:
+        entityType: GOAL
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "GOAL#${goalId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./goals.schemas.yaml#/components/schemas/GoalCreate
+      responses:
+        '201':
+          description: Goal created
+          content:
+            application/json:
+              schema:
+                $ref: ./goals.schemas.yaml#/components/schemas/GoalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/goals/{goalId}:
+    get:
+      operationId: getGoal
+      tags: [Goals]
+      x-repository: Goal
+      x-dynamodb:
+        entityType: GOAL
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "GOAL#${goalId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            $ref: ./goals.schemas.yaml#/components/schemas/GoalId
+      responses:
+        '200':
+          description: Goal
+          content:
+            application/json:
+              schema:
+                $ref: ./goals.schemas.yaml#/components/schemas/GoalResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+  /v1/customers/{customerId}/constraints:
+    get:
+      operationId: listConstraints
+      tags: [Goals]
+      x-repository: HardConstraint
+      x-dynamodb:
+        entityType: CONSTRAINT
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "CONSTRAINT#${constraintId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+        filterFields: [type]
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+        - $ref: ./common/parameters.yaml#/components/parameters/Cursor
+        - $ref: ./common/parameters.yaml#/components/parameters/Limit
+      responses:
+        '200':
+          description: Hard constraints
+          content:
+            application/json:
+              schema:
+                $ref: ./goals.schemas.yaml#/components/schemas/HardConstraintListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createConstraint
+      tags: [Goals]
+      x-repository: HardConstraint
+      x-dynamodb:
+        entityType: CONSTRAINT
+        pkPatternTemplate: "CUSTOMER#${customerId}"
+        skPatternTemplate: "CONSTRAINT#${constraintId}"
+        pkPattern: entity
+        createdAtField: createdAt
+        updatedAtField: updatedAt
+        softDeleteEnabled: false
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+        - $ref: ./common/parameters.yaml#/components/parameters/CustomerIdPath
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./goals.schemas.yaml#/components/schemas/HardConstraintCreate
+      responses:
+        '201':
+          description: Constraint created
+          content:
+            application/json:
+              schema:
+                $ref: ./goals.schemas.yaml#/components/schemas/HardConstraintResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey
+    bearerAuth:
+      $ref: ./common/security.yaml#/components/securitySchemes/bearerAuth

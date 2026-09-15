@@ -1,0 +1,38 @@
+apis:
+  identity:
+    root: src/identity.yaml
+  goals:
+    root: src/goals.yaml
+  accounts:
+    root: src/accounts.yaml
+  proposals:
+    root: src/proposals.yaml
+  actions:
+    root: src/actions.yaml
+  explanations:
+    root: src/explanations.yaml
+  complaints:
+    root: src/complaints.yaml
+  outcomes:
+    root: src/outcomes.yaml
+  governance:
+    root: src/governance.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: off
+  operation-4xx-response: warn
+  info-license: off
+  info-license-url: off
+  tag-description: off
+  operation-operationId: error
+  operation-summary: off
+  info-license-strict: off
+  no-invalid-media-type-examples: off
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages: []

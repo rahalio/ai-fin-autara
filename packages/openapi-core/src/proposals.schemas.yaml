@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: Autara proposals schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    ProposalId:
+      type: string
+      pattern: '^prp_[0-9A-HJKMNP-TV-Z]{26}$'
+    SuitabilityCheckId:
+      type: string
+      pattern: '^sut_[0-9A-HJKMNP-TV-Z]{26}$'
+    ActionType:
+      type: string
+      enum: [payBill, savingsSweep, refinance, providerSwitch, allocationChange]
+    ProposalStatus:
+      type: string
+      enum: [pending, confirmed, rejected, expired, escalated]
+    SuitabilityResult:
+      type: string
+      enum: [pass, fail, escalate]
+    SuitabilityCheck:
+      type: object
+      required: [suitabilityCheckId, customerId, result, checkedAt]
+      properties:
+        suitabilityCheckId:
+          $ref: '#/components/schemas/SuitabilityCheckId'
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        result:
+          $ref: '#/components/schemas/SuitabilityResult'
+        perimeter:
+          type: string
+        checkedAt:
+          type: string
+          format: date-time
+    ActionProposal:
+      type: object
+      required: [proposalId, customerId, actionType, status, material, createdAt]
+      properties:
+        proposalId:
+          $ref: '#/components/schemas/ProposalId'
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        status:
+          $ref: '#/components/schemas/ProposalStatus'
+        material:
+          type: boolean
+        estimatedBenefit:
+          type: number
+          format: double
+        explanationId:
+          type: string
+        suitability:
+          $ref: '#/components/schemas/SuitabilityCheck'
+        hostInstitutionLosing:
+          type: boolean
+          description: True when recommendation benefits customer via non-host product (BR-4).
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ActionProposalCreate:
+      type: object
+      required: [customerId, actionType, material]
+      properties:
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        material:
+          type: boolean
+        estimatedBenefit:
+          type: number
+          format: double
+        policyId:
+          type: string
+    ActionProposalResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ActionProposal'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ActionProposalListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionProposal'
+        nextCursor:
+          type: string
+    ActionProposalListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ActionProposalListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,164 @@
+openapi: 3.1.0
+info:
+  title: Autara governance schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    ModelVersionId:
+      type: string
+      pattern: '^gvn_[0-9A-HJKMNP-TV-Z]{26}$'
+    VendorId:
+      type: string
+      pattern: '^vnd_[0-9A-HJKMNP-TV-Z]{26}$'
+    ModelStatus:
+      type: string
+      enum: [draft, approved, retired, rolledBack]
+    ModelVersion:
+      type: object
+      required: [modelVersionId, name, version, status, createdAt]
+      properties:
+        modelVersionId:
+          $ref: '#/components/schemas/ModelVersionId'
+        name:
+          type: string
+        version:
+          type: string
+        status:
+          $ref: '#/components/schemas/ModelStatus'
+        propensityNotes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ModelVersionCreate:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        propensityNotes:
+          type: string
+    VendorDependency:
+      type: object
+      required: [vendorId, vendorName, capability, concentrationScore, killSwitchActive, createdAt]
+      properties:
+        vendorId:
+          $ref: '#/components/schemas/VendorId'
+        vendorName:
+          type: string
+        capability:
+          type: string
+        concentrationScore:
+          type: number
+          format: float
+        exitPlanPresent:
+          type: boolean
+        killSwitchActive:
+          type: boolean
+        failoverBehaviour:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    FairnessCohort:
+      type: object
+      required: [cohortLabel, recommendationRate, approvalRate]
+      properties:
+        cohortLabel:
+          type: string
+        recommendationRate:
+          type: number
+          format: float
+        approvalRate:
+          type: number
+          format: float
+        thresholdBreached:
+          type: boolean
+    FairnessSnapshot:
+      type: object
+      required: [cohorts, generatedAt, createdAt]
+      properties:
+        cohorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FairnessCohort'
+        remediationOpenCount:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ModelVersionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ModelVersion'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ModelVersionListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelVersion'
+        nextCursor:
+          type: string
+    ModelVersionListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ModelVersionListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    VendorDependencyResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/VendorDependency'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    VendorDependencyListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VendorDependency'
+        nextCursor:
+          type: string
+    VendorDependencyListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/VendorDependencyListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    FairnessSnapshotResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/FairnessSnapshot'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

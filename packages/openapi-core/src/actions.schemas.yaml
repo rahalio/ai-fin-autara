@@ -1,0 +1,110 @@
+openapi: 3.1.0
+info:
+  title: Autara actions schemas
+  version: 0.1.0
+paths: {}
+components:
+  schemas:
+    ActionId:
+      type: string
+      pattern: '^act_[0-9A-HJKMNP-TV-Z]{26}$'
+    ActionStatus:
+      type: string
+      enum: [executed, failed, reversed]
+    AutomationStatus:
+      type: string
+      enum: [active, paused, disabled]
+    AutomationCategory:
+      type: string
+      enum: [bills, savings, switches, all]
+    ExecutedAction:
+      type: object
+      required: [actionId, proposalId, customerId, status, executedAt, createdAt]
+      properties:
+        actionId:
+          $ref: '#/components/schemas/ActionId'
+        proposalId:
+          type: string
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        status:
+          $ref: '#/components/schemas/ActionStatus'
+        executedAt:
+          type: string
+          format: date-time
+        reversedAt:
+          type: string
+          format: date-time
+        coolingWindowEndsAt:
+          type: string
+          format: date-time
+        policyVersion:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AutomationProfile:
+      type: object
+      required: [customerId, automationStatus, createdAt]
+      properties:
+        customerId:
+          $ref: ./common/primitives.yaml#/components/schemas/CustomerId
+        automationStatus:
+          $ref: '#/components/schemas/AutomationStatus'
+        pausedCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutomationCategory'
+        freezeReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PauseAutomationRequest:
+      type: object
+      required: [categories]
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutomationCategory'
+    ExecutedActionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ExecutedAction'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ExecutedActionListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutedAction'
+        nextCursor:
+          type: string
+    ExecutedActionListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ExecutedActionListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AutomationProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AutomationProfile'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
